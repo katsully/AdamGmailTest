@@ -101,6 +101,7 @@ def createMessageWithAttachment(
         content_type = 'application/octet-stream'
     main_type, sub_type = content_type.split('/', 1)
     if main_type == 'text':
+        print("here is the problem")
         fp = open(attachmentFile, 'rb')
         msg = MIMEText(fp.read(), _subtype=sub_type)
         fp.close()
@@ -121,23 +122,25 @@ def createMessageWithAttachment(
     msg.add_header('Content-Disposition', 'attachment', filename=filename)
     message.attach(msg)
 
-    return {'raw': base64.urlsafe_b64encode(message.as_string())}
+    return {'raw': base64.urlsafe_b64encode(message.as_string().encode()).decode()}
 
 
 def main(unused_addr, to_email):
     to = to_email
+    print(to)
     sender = "kmsullivan012@gmail.com"
     subject = "higdfgdsdfsfdfgd"
     msgHtml = "Hi<br/>Html Email"
     msgPlain = "Hi\nPlain Email"
     SendMessage(sender, to, subject, msgHtml, msgPlain)
+    # Send message with attachment: 
+    # SendMessage(sender, to, subject, msgHtml, msgPlain, 'dummy.pdf')
     print(server)
     print("about to close server")
     server.shutdown()
     print("about to quit()")
     quit()
-    # Send message with attachment: 
-    # SendMessage(sender, to, subject, msgHtml, msgPlain, '/path/to/file.pdf')
+    
 
 ## TODO: needs to run automactically
 
