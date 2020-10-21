@@ -1,5 +1,6 @@
 import httplib2
 import os
+import oauth2client
 from oauth2client import client, tools, file
 import base64
 from email.mime.multipart import MIMEMultipart
@@ -15,7 +16,7 @@ CLIENT_SECRET_FILE = 'credentials.json'
 APPLICATION_NAME = 'Gmail API Python Send Email'
 
 def get_credentials():
-    home_dir = os.path.expanduser('~')
+    home_dir = os.getcwd()
     credential_dir = os.path.join(home_dir, '.credentials')
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
@@ -120,7 +121,7 @@ def createMessageWithAttachment(
 
 
 def main():
-    to = "katsullivan@nyu.edu"
+    to = "ddc310@nyu.edu"
     sender = "kmsullivan012@gmail.com"
     subject = "higdfgdfgd"
     msgHtml = "Hi<br/>Html Email"
