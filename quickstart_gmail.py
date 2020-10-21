@@ -1,5 +1,6 @@
 import httplib2
 import os
+import oauth2client
 from oauth2client import client, tools, file
 import base64
 from email.mime.multipart import MIMEMultipart
@@ -21,6 +22,7 @@ def get_credentials():
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
                                    'gmail-python-email-send.json')
+    print(credential_path)
     store = oauth2client.file.Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
@@ -122,7 +124,7 @@ def createMessageWithAttachment(
 def main():
     to = "katsullivan@nyu.edu"
     sender = "kmsullivan012@gmail.com"
-    subject = "higdfgdfgd"
+    subject = "higdfgdsdfsfdfgd"
     msgHtml = "Hi<br/>Html Email"
     msgPlain = "Hi\nPlain Email"
     SendMessage(sender, to, subject, msgHtml, msgPlain)
