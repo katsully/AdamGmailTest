@@ -10,6 +10,9 @@ import mimetypes
 from email.mime.image import MIMEImage
 from email.mime.audio import MIMEAudio
 from email.mime.base import MIMEBase
+from pythonosc import osc_server
+from pythonosc import dispatcher
+import sys
 
 SCOPES = 'https://www.googleapis.com/auth/gmail.send'
 CLIENT_SECRET_FILE = 'credentials.json'
@@ -51,7 +54,7 @@ def SendMessageInternal(service, user_id, message):
     except errors.HttpError as error:
         print('An error occurred: %s' % error)
         return "Error"
-    return "OK"
+    
 
 def CreateMessageHtml(sender, to, subject, msgHtml, msgPlain):
     msg = MIMEMultipart('alternative')
@@ -121,15 +124,26 @@ def createMessageWithAttachment(
     return {'raw': base64.urlsafe_b64encode(message.as_string())}
 
 
-def main():
-    to = "ddc310@nyu.edu"
+def main(unused_addr, to_email):
+    to = to_email
     sender = "kmsullivan012@gmail.com"
     subject = "higdfgdsdfsfdfgd"
     msgHtml = "Hi<br/>Html Email"
     msgPlain = "Hi\nPlain Email"
     SendMessage(sender, to, subject, msgHtml, msgPlain)
+    print(server)
+    print("about to close server")
+    server.shutdown()
+    print("about to quit()")
+    quit()
     # Send message with attachment: 
     # SendMessage(sender, to, subject, msgHtml, msgPlain, '/path/to/file.pdf')
 
+## TODO: needs to run automactically
+
 if __name__ == '__main__':
-    main()
+    dispatcher = dispatcher.Dispatcher()
+    dispatcher.map("/email", main)
+    server = osc_server.ThreadingOSCUDPServer(('127.0.0.1', 12345), dispatcher)
+    print(server)
+    server.serve_forever()
