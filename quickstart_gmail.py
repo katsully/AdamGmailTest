@@ -10,6 +10,7 @@ import mimetypes
 from email.mime.image import MIMEImage
 from email.mime.audio import MIMEAudio
 from email.mime.base import MIMEBase
+import email.encoders
 from pythonosc import osc_server
 from pythonosc import dispatcher
 import sys
@@ -120,6 +121,7 @@ def createMessageWithAttachment(
         fp.close()
     filename = os.path.basename(attachmentFile)
     msg.add_header('Content-Disposition', 'attachment', filename=filename)
+    email.encoders.encode_base64(msg)
     message.attach(msg)
 
     return {'raw': base64.urlsafe_b64encode(message.as_string().encode()).decode()}
@@ -132,9 +134,9 @@ def main(unused_addr, to_email):
     subject = "higdfgdsdfsfdfgd"
     msgHtml = "Hi<br/>Html Email"
     msgPlain = "Hi\nPlain Email"
-    SendMessage(sender, to, subject, msgHtml, msgPlain)
+    # SendMessage(sender, to, subject, msgHtml, msgPlain)
     # Send message with attachment: 
-    # SendMessage(sender, to, subject, msgHtml, msgPlain, 'dummy.pdf')
+    SendMessage(sender, to, subject, msgHtml, msgPlain, 'Vicon-NYU-Quote.pdf')
     print(server)
     print("about to close server")
     server.shutdown()
