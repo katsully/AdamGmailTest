@@ -26,6 +26,8 @@ def main():
     results = service.users().messages().list(userId='me',labelIds = ['INBOX']).execute()
     messages = results.get('messages', [])
     for message in messages:
+            headers = service.users().messages().get(userId='me', id=message['id'], format='metadata').execute()            
+            print([a['value'] for a in headers['payload']['headers'] if a['name']=='Return-Path'][0])
             msg = service.users().messages().get(userId='me', id=message['id']).execute()
             print(msg['snippet'])
             # Query the service object to get User Profile
