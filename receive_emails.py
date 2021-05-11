@@ -29,26 +29,13 @@ def main(sender):
     messages = results.get('messages', [])
     for message in messages:
             headers = service.users().messages().get(userId='me', id=message['id']).execute()            
-            # print([a['value'] for a in headers['payload']['headers'] if a['name']=='From'][0])
-            # for h in headers:
-                # print(h)
-            # print(headers['payload']['headers'])
             msg_headers = headers['payload']['headers']
             for k in range(len(msg_headers)):       
                 if msg_headers[k]['name'] == 'Return-Path':
                     new_sender = msg_headers[k]['value']
-                    print(sender)
-                    print(new_sender)
                     if "<"+sender+">" == new_sender:
                         return False
             return True
-            # test_sender = message["payload"]
-            # print(headers['Return-Path'])
-            # msg = service.users().messages().get(userId='me', id=message['id']).execute()
-            # print(msg['snippet'])
-            # Query the service object to get User Profile
-            # userInfo = service.users().getProfile(userId='me').execute()
-            # print("UserInfo is \n %s" % (userInfo))
 
 if __name__ == '__main__':
     main()

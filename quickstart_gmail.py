@@ -38,7 +38,7 @@ def get_credentials():
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
         credentials = tools.run_flow(flow, store)
-        print('Storing credentials to ' + credential_path)
+        # print('Storing credentials to ' + credential_path)
     return credentials
 
 def SendMessage(sender, to, subject, msgHtml, msgPlain, attachmentFile=None):
@@ -109,7 +109,6 @@ def createMessageWithAttachment(
         content_type = 'application/octet-stream'
     main_type, sub_type = content_type.split('/', 1)
     if main_type == 'text':
-        print("here is the problem")
         fp = open(attachmentFile, 'rb')
         msg = MIMEText(fp.read(), _subtype=sub_type)
         fp.close()
@@ -156,10 +155,13 @@ a right to know. \
 \n\nI’ve attached an interoffice message chain below. Read it. If you think this is a story you want \
 to pursue, I can help. Reply ‘yes’ to this email and include your mobile phone number. I will \
 then contact you."
+   
+    # send message without attachment
     # SendMessage(sender, to, subject, msgHtml, msgPlain)
+   
     # Send message with attachment: 
     SendMessage(sender, to, subject, msgHtml, msgPlain, 'InterofficeCorrespondence.pdf')
-    print(server)
+    
     # get latest senders from our email
     no_match = True
     while no_match:
@@ -185,15 +187,16 @@ To accept this deal, reply with ‘yes’.", signal_receiver])
 
     # wait for receiving message
     still_waiting = True  
-    # should be a timer in this while loop
     while still_waiting: 
         result = subprocess.run(["C:\\Users\\kmsul\\AJO_Game\\Adam\\signal-cli\\build\\install\\signal-cli\\bin\\signal-cli.bat", "-u", "+16503088054", "receive"], stdout=subprocess.PIPE, errors='ignore', encoding='utf-8').stdout   
 
         # TODO - still isn't identifying when user responds
         numbers = [word for word in result.split() if word.startswith('+')]
-        if numbers != [] and numbers[0] == mobile_num:
-            waiting = False
+        if numbers != [] and numbers[0][1:] == mobile_num:
+            still_waiting = False
             print("found it!")
+        else: 
+            time.sleep(10)
 
     print("about to close server")
     server.shutdown()
@@ -204,8 +207,6 @@ To accept this deal, reply with ‘yes’.", signal_receiver])
 ## TODO: needs to run automactically
 
 if __name__ == '__main__':
-    # settings.init()   
-
     dispatcher = dispatcher.Dispatcher()
     dispatcher.map("/email", main)
     server = osc_server.ThreadingOSCUDPServer(('127.0.0.1', 12345), dispatcher)
