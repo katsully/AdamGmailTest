@@ -2,3 +2,5 @@
 venv/
 .credentials/
 signal-cli/
+*.pyc
+__pycache__/

@@ -173,9 +173,13 @@ then contact you."
     msgPlain = "Check Signal for further instructions."
     SendMessage(sender, to, subject, msgHtml, msgPlain)
 
+    origWD = os.getcwd() # remember our original working directory
+    # change directory to where signal-bat is installed
+    os.chdir(os.path.join(origWD, "signal-cli/build/install/signal-cli/bin"))
+
     # text user via signal
     signal_receiver = "+" + mobile_num
-    subprocess.run(["C:\\Users\\kmsul\\AJO_Game\\Adam\\signal-cli\\build\\install\\signal-cli\\bin\\signal-cli.bat", "-u", "+16503088054", "send", \
+    subprocess.run(["signal-cli.bat", "-u", "+16503088054", "send", \
         "-m", "We’re using Signal because it is more secure than email and \
 other communication methods. Before we go further, let’s talk \
 about the terms of my cooperation, i.e. what you reporters call \
@@ -188,7 +192,7 @@ To accept this deal, reply with ‘yes’.", signal_receiver])
     # wait for receiving message
     still_waiting = True  
     while still_waiting: 
-        result = subprocess.run(["C:\\Users\\kmsul\\AJO_Game\\Adam\\signal-cli\\build\\install\\signal-cli\\bin\\signal-cli.bat", "-u", "+16503088054", "receive"], stdout=subprocess.PIPE, errors='ignore', encoding='utf-8').stdout   
+        result = subprocess.run(["signal-cli.bat", "-u", "+16503088054", "receive"], stdout=subprocess.PIPE, errors='ignore', encoding='utf-8').stdout   
 
         # TODO - still isn't identifying when user responds
         numbers = [word for word in result.split() if word.startswith('+')]
@@ -198,6 +202,7 @@ To accept this deal, reply with ‘yes’.", signal_receiver])
         else: 
             time.sleep(10)
 
+    os.chdir(origWD) # get back to our original working directory
     print("about to close server")
     server.shutdown()
     print("about to quit()")
