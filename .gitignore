@@ -1,3 +1,4 @@
 *.json
 venv/
 .credentials/
+signal-cli/

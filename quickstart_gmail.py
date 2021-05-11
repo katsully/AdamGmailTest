@@ -15,6 +15,7 @@ from pythonosc import osc_server
 from pythonosc import dispatcher
 import sys
 import time
+import subprocess
 
 import settings
 import receive_emails
@@ -133,7 +134,7 @@ def createMessageWithAttachment(
     return {'raw': base64.urlsafe_b64encode(message.as_string().encode()).decode()}
 
 
-def main(unused_addr, to_email):
+def main(unused_addr, to_email, mobile_num):
     to = to_email
     sender = "kmsullivan012@gmail.com"
     subject = "Story for you"
@@ -163,12 +164,36 @@ then contact you."
     no_match = True
     while no_match:
         no_match = receive_emails.main(to)
-        time.sleep(5)
+        time.sleep(10)
 
     subject = ""
     msgHtml = "Check Signal for further instructions."
     msgPlain = "Check Signal for further instructions."
     SendMessage(sender, to, subject, msgHtml, msgPlain)
+
+    # text user via signal
+    signal_receiver = "+" + mobile_num
+    subprocess.run(["C:\\Users\\kmsul\\AJO_Game\\Adam\\signal-cli\\build\\install\\signal-cli\\bin\\signal-cli.bat", "-u", "+16503088054", "send", \
+        "-m", "We’re using Signal because it is more secure than email and \
+other communication methods. Before we go further, let’s talk \
+about the terms of my cooperation, i.e. what you reporters call \
+a “source deal.” My name must not appear anywhere in any \
+article, and you must promise to regard me as a confidential \
+source. I will provide information “on guidance” and give you \
+documents and other resources to support what I am telling you. \
+To accept this deal, reply with ‘yes’.", signal_receiver])
+
+    # wait for receiving message
+    still_waiting = True  
+    # should be a timer in this while loop
+    while still_waiting: 
+        result = subprocess.run(["C:\\Users\\kmsul\\AJO_Game\\Adam\\signal-cli\\build\\install\\signal-cli\\bin\\signal-cli.bat", "-u", "+16503088054", "receive"], stdout=subprocess.PIPE, errors='ignore', encoding='utf-8').stdout   
+
+        # TODO - still isn't identifying when user responds
+        numbers = [word for word in result.split() if word.startswith('+')]
+        if numbers != [] and numbers[0] == mobile_num:
+            waiting = False
+            print("found it!")
 
     print("about to close server")
     server.shutdown()
