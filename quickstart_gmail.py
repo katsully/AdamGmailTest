@@ -55,21 +55,17 @@ def get_credentials():
             credentials = tools.run_flow(flow, store, flags)
         else: # Needed only for compatibility with Python 2.6
             credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
     return credentials
 
 def SendMessage(sender, to, subject, msgHtml, msgPlain, attachmentFile=None):
-    print(sender)
     creds = get_credentials()
     http = gspread.authorize(creds)
     service = build('gmail', 'v1', credentials=creds)
-    # service = discovery.build('gmail', 'v1', http=http, cache_discovery=False)
     if attachmentFile:
         message1 = createMessageWithAttachment(sender, to, subject, msgHtml, msgPlain, attachmentFile)
     else: 
         message1 = CreateMessageHtml(sender, to, subject, msgHtml, msgPlain)
     result = SendMessageInternal(service, "sjd.9f8.auy@gmail.com", message1)
-    print(sender)
     return result
 
 def SendMessageInternal(service, user_id, message):
@@ -180,7 +176,6 @@ then contact you."
     # SendMessage(sender, to, subject, msgHtml, msgPlain)
    
     # Send message with attachment: 
-    print(sender)
     SendMessage(sender, to, subject, msgHtml, msgPlain, 'InterofficeCorrespondence.pdf')
     
     # get latest senders from our email
@@ -216,7 +211,6 @@ To accept this deal, reply with ‘yes’.", signal_receiver])
     while still_waiting: 
         result = subprocess.run(["signal-cli.bat", "-u", "+16503088054", "receive"], stdout=subprocess.PIPE, errors='ignore', encoding='utf-8').stdout   
 
-        # TODO - still isn't identifying when user responds
         numbers = [word for word in result.split() if word.startswith('+')]
         if numbers != [] and numbers[0][1:] == mobile_num:
             still_waiting = False
