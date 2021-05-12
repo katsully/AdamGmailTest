@@ -1,7 +1,5 @@
 import httplib2
 import os
-import oauth2client
-from oauth2client import client, tools, file
 import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -16,40 +14,62 @@ from pythonosc import dispatcher
 import sys
 import time
 import subprocess
+from google.auth.transport.requests import Request
+from googleapiclient.discovery import build
+from oauth2client import tools
+from oauth2client.file import Storage
+from oauth2client import client
 
-import settings
 import receive_emails
 
-SCOPES = ['https://www.googleapis.com/auth/gmail.send',
-'https://www.googleapis.com/auth/gmail.readonly']
-CLIENT_SECRET_FILE = 'credentials.json'
+import logging
+import gspread
+
+try:
+    import argparse
+    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+except ImportError:
+    flags = None
+
+# silence ImportError: file_cache is unavailable when using oauth2client >= 4.0.0 or google-auth error
+logging.getLogger('googleapicliet.discovery_cache').setLevel(logging.ERROR)
+
+SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
+CLIENT_SECRET_FILE = 'credentials_old.json'
 APPLICATION_NAME = 'Gmail API Python Send Email'
 
 def get_credentials():
-    home_dir = os.getcwd()
+    home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir, '.credentials')
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
-                                   'gmail-python-email-send.json')
-    store = oauth2client.file.Storage(credential_path)
+                                   'gmail-python-email-modify.json')
+
+    store = Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
-        credentials = tools.run_flow(flow, store)
-        # print('Storing credentials to ' + credential_path)
+        if flags:
+            credentials = tools.run_flow(flow, store, flags)
+        else: # Needed only for compatibility with Python 2.6
+            credentials = tools.run(flow, store)
+        print('Storing credentials to ' + credential_path)
     return credentials
 
 def SendMessage(sender, to, subject, msgHtml, msgPlain, attachmentFile=None):
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('gmail', 'v1', http=http)
+    print(sender)
+    creds = get_credentials()
+    http = gspread.authorize(creds)
+    service = build('gmail', 'v1', credentials=creds)
+    # service = discovery.build('gmail', 'v1', http=http, cache_discovery=False)
     if attachmentFile:
         message1 = createMessageWithAttachment(sender, to, subject, msgHtml, msgPlain, attachmentFile)
     else: 
         message1 = CreateMessageHtml(sender, to, subject, msgHtml, msgPlain)
-    result = SendMessageInternal(service, "me", message1)
+    result = SendMessageInternal(service, "sjd.9f8.auy@gmail.com", message1)
+    print(sender)
     return result
 
 def SendMessageInternal(service, user_id, message):
@@ -135,7 +155,7 @@ def createMessageWithAttachment(
 
 def main(unused_addr, to_email, mobile_num):
     to = to_email
-    sender = "kmsullivan012@gmail.com"
+    sender = "sjd.9f8.auy@gmail.com"
     subject = "Story for you"
     msgHtml = "I’ve been reading your stuff and think you’re the right reporter for this. I can’t tell you my \
     name (yet!). All I will say for now is that I work at Elektros as an engineer and have learned \
@@ -160,12 +180,14 @@ then contact you."
     # SendMessage(sender, to, subject, msgHtml, msgPlain)
    
     # Send message with attachment: 
+    print(sender)
     SendMessage(sender, to, subject, msgHtml, msgPlain, 'InterofficeCorrespondence.pdf')
     
     # get latest senders from our email
     no_match = True
+    creds = get_credentials()
     while no_match:
-        no_match = receive_emails.main(to)
+        no_match = receive_emails.main(to, creds)
         time.sleep(10)
 
     subject = ""
@@ -201,6 +223,10 @@ To accept this deal, reply with ‘yes’.", signal_receiver])
             print("found it!")
         else: 
             time.sleep(10)
+
+    # send second signal text with audio attachment
+    subprocess.run(["signal-cli.bat", "-u", "+16503088054", "send", \
+        "-m", "", signal_receiver, "-a", "Recording.m4a"])
 
     os.chdir(origWD) # get back to our original working directory
     print("about to close server")
